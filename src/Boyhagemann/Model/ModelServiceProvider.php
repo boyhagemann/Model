@@ -18,10 +18,18 @@ class ModelServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-            $this->package('model', 'model');
-            
-//            $this->register('Robbo\Presenter\PresenterServiceProvider');
+            $this->package('model', 'model');            
 	}
+	/**
+	 * Register the service provider.
+	 *
+	 * @return void
+	 */
+	public function boot()
+	{            
+            $this->register('Robbo\Presenter\PresenterServiceProvider');
+	}
+
 
 	/**
 	 * Get the services provided by the provider.
