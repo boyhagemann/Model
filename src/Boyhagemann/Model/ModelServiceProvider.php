@@ -19,6 +19,8 @@ class ModelServiceProvider extends ServiceProvider {
 	public function register()
 	{
             $this->package('model', 'model');
+            
+//            $this->register('Robbo\Presenter\PresenterServiceProvider');
 	}
 
 	/**

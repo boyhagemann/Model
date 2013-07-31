@@ -29,6 +29,11 @@ class ModelBuilder
      * @var string
      */
     protected $modelPath = 'app/models';
+    
+    /**
+     * @var string
+     */
+    protected $presenter;    
 
     /**
      * @var Blueprint
@@ -134,13 +139,13 @@ class ModelBuilder
         }
     }
 
-	/**
-	 * @return string
-	 */
-	public function getName()
-	{
-		return $this->name;
-	}
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+            return $this->name;
+    }
 
     /**
      * @param string $name
@@ -167,6 +172,16 @@ class ModelBuilder
             $this->blueprint->increments('id');       
         }
         
+        return $this;
+    }
+    
+    /**
+     * @param string $presenter
+     * @return $this
+     */
+    public function presenter($presenter)
+    {
+        $this->presenter = $presenter;
         return $this;
     }
     
@@ -342,8 +357,9 @@ class ModelBuilder
      */
     public function buildFile()
     {
-        $this->generator->setClass($this->name);
-        $class = current($this->generator->getClasses());
+        $file = $this->generator;
+        $file->setClass($this->name);
+        $class = current($file->getClasses());
         $class->setExtendedClass('\Eloquent');
 
         // Set the table name
@@ -359,6 +375,17 @@ class ModelBuilder
         $fillable = array_keys($this->columns);
         $class->addProperty('fillable', $fillable, PropertyGenerator::FLAG_PROTECTED);
 
+        if($this->presenter) {
+            $file->setNamespace($class->getNamespaceName());
+            $file->setUse('Robbo\Presenter\PresentableInterface');
+            $class->setImplementedInterfaces(array('PresentableInterface'));
+            
+            $docblock = '@return \\' . $this->presenter;
+            $body = sprintf('return new \%s($this);', $this->presenter);
+            $class->addMethod('getPresenter', array(), null, $body, $docblock);
+        }
+        
+        
         // Add elements, only for relationships
         foreach ($this->relations as $alias => $relation) {
 
@@ -366,8 +393,8 @@ class ModelBuilder
             $body = sprintf('return $this->%s(\'%s\', \'%s\');', $relation->getType(), $relation->getName(), $relation->getTable());
             $class->addMethod($alias, array(), null, $body, $docblock);
         }
-
-        return $this->generator->generate();
+        
+        return $file->generate();
     }
 
 }
