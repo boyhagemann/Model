@@ -349,6 +349,10 @@ class ModelBuilder
      */
     public function build()
     {
+        if(!class_exists($this->name)) {
+            $this->export();
+        }
+        
         return App::make($this->name);
     }
 
