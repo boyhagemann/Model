@@ -2,19 +2,30 @@
 
 namespace Boyhagemann\Model;
 
+use Boyhagemann\Form\FormBuilder;
 use Zend\Code\Generator\FileGenerator;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\PropertyGenerator;
 use Boyhagemann\Form\Element\InputElement;
 use Boyhagemann\Form\Element\ModelElement;
 use Illuminate\Database\Schema\Blueprint;
-use Event,
+use Illuminate\Database\Eloquent\Model;
+use Str,
     DB,
     Schema,
     App;
 
 class ModelBuilder
 {
+    /**
+     *
+     * @var Model
+     */
+    protected $model;
+    
+    protected $formBuilder;
+
+
     /**
      * @var string
      */
@@ -71,20 +82,31 @@ class ModelBuilder
      */
     public function __construct(FileGenerator $generator)
     {
-        $this->generator = $generator;
-        
-        Event::listen('formBuilder.addElement.post', array($this, 'postAddElement'));
-        Event::listen('formBuilder.buildElement.post', array($this, 'postBuildElement'));        
+        $this->generator = $generator;      
     }
     
+    public function setFormBuilder(FormBuilder $formBuilder)
+    {
+        $this->formBuilder = $formBuilder;
+    }
+    
+    public function getFormBuilder()
+    {
+        return $this->formBuilder;
+    }
+
+
     /**
      * 
      * @param type $name
      * @param type $element
-     * @param type $formBuilder
      */
-    public function postAddElement($name, InputElement $element, $formBuilder)
+    public function postAddElement($name, InputElement $element)
     {
+        if(isset($this->columns[$name])) {
+            return;
+        }
+        
 		$options = $element->getOptions();
 		$type = $element->getType();
 
@@ -119,18 +141,16 @@ class ModelBuilder
      * 
      * @param type $name
      * @param \Boyhagemann\Crud\FormBuilder\InputElement $element
-     * @param type $formBuilder
-     * @param type $formFactory
      */
-    public function postBuildElement($name, $element, $formBuilder, $formFactory)
+    public function postBuildElement($name, $element)
     {
         if ($element instanceof ModelElement && $element->getModel()) {
-
+        
             if ($element->getOption('multiple')) {
-                $this->createRelation($name, 'belongsToMany', $element->getModel());
+                $this->createRelation($name, 'belongsToMany', $element->getModel(), $element->getAlias());
             }
             else {
-                $this->createRelation($name, 'belongsTo', $element->getModel());
+                $this->createRelation($name, 'belongsTo', $element->getModel(), $element->getAlias());
             }
         }
         
@@ -212,11 +232,16 @@ class ModelBuilder
      * 
      * @param string $name
      * @param string $type
-     * @param string|Model $model
+     * @param string $model
+     * @param string $alias
      * @return ModelBuilder
      */
-    public function createRelation($alias, $type, $model)
-    {                 
+    public function createRelation($name, $type, $model, $alias = null)
+    {                         
+        if(isset($this->relations[$name])) {
+            return $this;
+        }
+        
         if(is_string($model)) {
             $model = App::make($model);
         }
@@ -224,15 +249,19 @@ class ModelBuilder
         $left = $this->buildNameFromClass($this->name);
         $right = $this->buildNameFromClass(get_class($model));
         
-        $table = $left . '_' . $alias;
+        $table = $left . '_' . $name;
         
         $field = $left . '_id';        
         $field2 = $right . '_id';
                 
         $relation = App::make('Boyhagemann\Model\Relation');
         $relation->table($table);
-        $relation->setType($type);
+        $relation->type($type);
         $relation->name(get_class($model));
+        
+        if($alias) {
+            $relation->alias($alias);
+        }
                 
         $blueprint = $relation->getBlueprint();
         
@@ -251,11 +280,22 @@ class ModelBuilder
             
         }
 
-        $this->relations[$alias] = $relation;
+        $this->relations[$name] = $relation;
         
-        return $this->relations[$alias];
+        return $this->relations[$name];
     }
     
+    /**
+     * 
+     * @param type $model
+     * @return $this
+     */
+    public function hasMany($model)
+    {
+        return $this->createRelation($model, 'hasMany', $model);
+    }
+
+
     /**
      * 
      * @param string $class
@@ -314,15 +354,40 @@ class ModelBuilder
     }
 
     /**
+     * @return Model
+     */
+    public function build()
+    {
+        if($this->model) {
+            return $this->model;
+        }
+        
+        if(!file_exists($this->buildFilename()) || !Schema::hasTable($this->table)) {  
+            $this->export();
+        }
+        
+        $this->model = App::make($this->name);
+        
+        return $this->model;
+    }
+
+    /**
      * Build the columns to the database
      */
     public function export()
-    {
+    {      
         // When there is no class name, no file has to be written to disk
         if(!$this->name) {
             return;
         }
-
+        
+        if($this->getFormBuilder()) {
+            foreach($this->getFormBuilder()->getElements() as $name => $element) {
+                $this->postAddElement($name, $element);
+                $this->postBuildElement($name, $element);
+            }
+        }
+        
         $this->getBlueprint()->build(DB::connection(), DB::connection()->getSchemaGrammar());
 
         $filename = $this->buildFilename();        
@@ -330,22 +395,10 @@ class ModelBuilder
         file_put_contents($filename, $contents);
 
         require_once $filename;
-
+        
         foreach ($this->relations as $relation) {
             $relation->export();
         }
-    }
-
-    /**
-     * @return Model
-     */
-    public function build()
-    {
-        if(!file_exists($this->buildFilename())) {
-            $this->export();
-        }
-        
-        return App::make($this->name);
     }
     
     /**
@@ -403,11 +456,18 @@ class ModelBuilder
         
         
         // Add elements, only for relationships
-        foreach ($this->relations as $alias => $relation) {
+        foreach ($this->relations as $relation) {
 
-            $docblock = '@return \Illuminate\Database\Eloquent\Collection';
-            $body = sprintf('return $this->%s(\'%s\', \'%s\');', $relation->getType(), $relation->getName(), $relation->getTable());
-            $class->addMethod($alias, array(), null, $body, $docblock);
+            $name = $relation->getAlias();
+            if($relation->getType() == 'belongsToMany') {
+                $docblock = '@return \Illuminate\Database\Eloquent\Collection';
+                $body = sprintf('return $this->%s(\'%s\', \'%s\');', $relation->getType(), $relation->getName(), $relation->getTable());
+            }
+            else {
+                $docblock = '@return \\' . $relation->getName();
+                $body = sprintf('return $this->%s(\'%s\');', $relation->getType(), $relation->getName());           
+            }
+            $class->addMethod($name, array(), null, $body, $docblock);
         }
         
         return $file->generate();

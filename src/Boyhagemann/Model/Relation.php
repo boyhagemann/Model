@@ -6,18 +6,33 @@ use Schema, DB;
 
 class Relation extends ModelBuilder
 {    
-    protected $type;
-    
+    protected $type;    
+    protected $alias;
+   
     public function getType()
     {
         return $this->type;
     }
 
-    public function setType($type)
+    public function type($type)
     {
         $this->type = $type;
     }
 
+    public function getAlias()
+    {        
+        if(!$this->alias) {
+            return lcfirst(str_replace('\\', '', $this->table));
+        }
+        
+        return $this->alias;
+    }
+
+    public function alias($alias)
+    {
+        $this->alias = $alias;
+    }
+    
     public function getName()
     {
         return $this->name;
@@ -30,7 +45,11 @@ class Relation extends ModelBuilder
     
     public function export()
     {
-        if($this->getType() == 'belongsToMany' && Schema::hasTable($this->table)) {
+        if($this->getType() == 'hasMany') {
+            return;
+        }
+        
+        if($this->getType() == 'belongsTo' && Schema::hasTable($this->table)) {
             return;
         }
         
