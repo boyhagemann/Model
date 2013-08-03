@@ -375,9 +375,9 @@ class ModelBuilder
      */
     public function build()
     {
-        if($this->model) {
-            return $this->model;
-        }
+//        if($this->model) {
+//            return $this->model;
+//        }
         
         if(!file_exists($this->buildFilename()) || !Schema::hasTable($this->table)) {  
             $this->export();
