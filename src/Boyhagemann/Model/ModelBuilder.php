@@ -28,7 +28,7 @@ class ModelBuilder
     /**
      * @var string
      */
-    protected $modelPath = 'app/models';
+    protected $modelPath = '/models';
     
     /**
      * @var string
@@ -325,18 +325,10 @@ class ModelBuilder
 
         $this->getBlueprint()->build(DB::connection(), DB::connection()->getSchemaGrammar());
 
-        $parts = explode('\\', $this->name);
-        $filename = '../' . $this->modelPath;
-        for ($i = 0; $i < count($parts); $i++) {
-            $filename .= '/' . $parts[$i];
-            if ($i < count($parts) - 1) {
-                @mkdir($filename);
-            }
-        }
-        $filename .= '.php';
-
+        $filename = $this->buildFilename();        
         $contents = $this->buildFile();
         file_put_contents($filename, $contents);
+
         require_once $filename;
 
         foreach ($this->relations as $relation) {
@@ -349,13 +341,33 @@ class ModelBuilder
      */
     public function build()
     {
-        if(!class_exists($this->name)) {
+        if(!file_exists($this->buildFilename())) {
             $this->export();
         }
         
         return App::make($this->name);
     }
-
+    
+    /**
+     * 
+     * @return string
+     */
+    public function buildFilename()
+    {        
+        $filename = app_path() .  '/' . trim($this->modelPath, '/');
+        
+        $parts = explode('\\', $this->name);
+        for ($i = 0; $i < count($parts); $i++) {
+            $filename .= '/' . $parts[$i];
+            if ($i < count($parts) - 1) {
+                @mkdir($filename);
+            }
+        }
+        $filename .= '.php';
+        
+        return $filename;
+    }
+    
     /**
      * @return string
      */
