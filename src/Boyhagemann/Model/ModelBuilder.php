@@ -47,6 +47,13 @@ class ModelBuilder
     protected $presenter;    
 
     /**
+     *
+     * @var type 
+     */
+    protected $parentClass = 'Eloquent';
+
+
+    /**
      * @var Blueprint
      */
     protected $blueprint;
@@ -127,8 +134,8 @@ class ModelBuilder
             
 			case 'select':
 			case 'modelSelect':
-            case 'choice':
-                
+                            
+            case 'choice':                
                 if(!isset($options['multiple']) || $options['multiple'] == false) {
                     $this->column($name, 'integer');          
                 }
@@ -202,6 +209,16 @@ class ModelBuilder
     public function presenter($presenter)
     {
         $this->presenter = $presenter;
+        return $this;
+    }
+    
+    /**
+     * @param string $parentClass
+     * @return $this
+     */
+    public function parentClass($parentClass)
+    {
+        $this->parentClass = $parentClass;
         return $this;
     }
     
@@ -429,7 +446,7 @@ class ModelBuilder
         $file = $this->generator;
         $file->setClass($this->name);
         $class = current($file->getClasses());
-        $class->setExtendedClass('\Eloquent');
+        $class->setExtendedClass('\\' . ltrim($this->parentClass, '\\'));
 
         // Set the table name
         $class->addProperty('table', $this->table, PropertyGenerator::FLAG_PROTECTED);
