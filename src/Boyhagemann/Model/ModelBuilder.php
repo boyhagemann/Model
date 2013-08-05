@@ -258,13 +258,14 @@ class ModelBuilder
         if(isset($this->relations[$name])) {
             return $this;
         }
+
         
-        if(is_string($model)) {
-            $model = App::make($model);
+        if(is_object($model)) {
+            $model = get_class($model);
         }
         
         $left = $this->buildNameFromClass($this->name);
-        $right = $this->buildNameFromClass(get_class($model));
+        $right = $this->buildNameFromClass($model);
         
         $table = $left . '_' . $name;
         
@@ -274,7 +275,7 @@ class ModelBuilder
         $relation = App::make('Boyhagemann\Model\Relation');
         $relation->table($table);
         $relation->type($type);
-        $relation->name(get_class($model));
+        $relation->name($model);
         
         if($alias) {
             $relation->alias($alias);
