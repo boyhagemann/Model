@@ -109,13 +109,10 @@ class ModelBuilder
      * @param type $element
      */
     public function postAddElement($name, InputElement $element)
-    {
-        if(isset($this->columns[$name])) {
-            return;
-        }
-        
+    {        
 		$options = $element->getOptions();
 		$type = $element->getType();
+   
 
         switch($type) {
             
@@ -127,19 +124,17 @@ class ModelBuilder
                 $this->column($name, 'text');
                 break;
             
+            case 'checkbox': 
+            case 'select': 
             case 'percent':  
             case 'integer':  
                 $this->column($name, 'integer');
                 break;
             
-			case 'select':
-			case 'modelSelect':
-                            
-            case 'choice':                
-                if(!isset($options['multiple']) || $options['multiple'] == false) {
-                    $this->column($name, 'integer');          
-                }
-                break;           
+		case 'modelSelect':
+                    	$this->column($name, 'integer');  
+			break;
+         
         }
         
     }
