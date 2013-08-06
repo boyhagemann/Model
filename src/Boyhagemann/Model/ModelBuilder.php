@@ -142,7 +142,7 @@ class ModelBuilder
     /**
      * 
      * @param type $name
-     * @param \Boyhagemann\Crud\FormBuilder\InputElement $element
+     * @param \Boyhagemann\Form\Element\InputElement $element
      */
     public function postBuildElement($name, $element)
     {
@@ -371,13 +371,9 @@ class ModelBuilder
      */
     public function build()
     {
-//        if($this->model) {
-//            return $this->model;
+//        if(!file_exists($this->buildFilename()) || !Schema::hasTable($this->table)) {
+//            $this->export();
 //        }
-        
-        if(!file_exists($this->buildFilename()) || !Schema::hasTable($this->table)) {  
-            $this->export();
-        }
         
         $this->model = App::make($this->name);
         
@@ -386,6 +382,7 @@ class ModelBuilder
 
     /**
      * Build the columns to the database
+	 * @return $this
      */
     public function export()
     {      
@@ -403,16 +400,27 @@ class ModelBuilder
         
         $this->getBlueprint()->build(DB::connection(), DB::connection()->getSchemaGrammar());
 
-        $filename = $this->buildFilename();        
-        $contents = $this->buildFile();
-        file_put_contents($filename, $contents);
-
-        require_once $filename;
         
         foreach ($this->relations as $relation) {
             $relation->export();
         }
+
+		return $this;
     }
+
+	/**
+	 * @return $this
+	 */
+	public function exportFile()
+	{
+		$filename = $this->buildFilename();
+		$contents = $this->buildFile();
+		file_put_contents($filename, $contents);
+
+		require_once $filename;
+
+		return $this;
+	}
     
     /**
      * 
