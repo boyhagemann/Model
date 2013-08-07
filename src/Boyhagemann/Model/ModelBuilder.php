@@ -124,15 +124,23 @@ class ModelBuilder
                 $this->column($name, 'text');
                 break;
             
-            case 'checkbox': 
-            case 'select': 
+            case 'checkbox':
             case 'percent':  
             case 'integer':  
                 $this->column($name, 'integer');
                 break;
-            
-		case 'modelSelect':
-                    	$this->column($name, 'integer');  
+
+			case 'select':
+				if($this->hasRule($name, 'integer')) {
+					$this->column($name, 'integer');
+				}
+				else {
+					$this->column($name, 'string');
+				}
+				break;
+
+			case 'modelSelect':
+            	$this->column($name, 'integer');
 			break;
          
         }
@@ -168,6 +176,29 @@ class ModelBuilder
     {
             return $this->name;
     }
+
+	/**
+	 * @param $column
+	 * @return array
+	 */
+	public function getRules($column)
+	{
+		if(!isset($this->rules[$column])) {
+			return array();
+		}
+
+		return explode('|', $this->rules[$column]);
+	}
+
+	/**
+	 * @param $column
+	 * @param $rule
+	 * @return bool
+	 */
+	public function hasRule($column, $rule)
+	{
+		return in_array($rule, $this->getRules($column));
+	}
 
     /**
      * @param string $name
