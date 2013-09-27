@@ -25,6 +25,11 @@ class ModelBuilder
     
     protected $formBuilder;
 
+	/**
+	 * @var bool
+	 */
+	protected $autogenerate = true;
+
 
     /**
      * @var string
@@ -102,6 +107,15 @@ class ModelBuilder
         return $this->formBuilder;
     }
 
+	/**
+	 * @param bool $autogenerate
+	 * @return $this
+	 */
+	public function autoGenerate($autogenerate = true)
+	{
+		$this->autogenerate = (bool) $autogenerate;
+		return $this;
+	}
 
     /**
      * 
@@ -402,9 +416,10 @@ class ModelBuilder
      */
     public function build()
     {
-//        if(!file_exists($this->buildFilename()) || !Schema::hasTable($this->table)) {
-//            $this->export();
-//        }
+        if($this->autogenerate && (!file_exists($this->buildFilename()) || !Schema::hasTable($this->table))) {
+            $this->export();
+            $this->exportFile();
+        }
         
         $this->model = App::make($this->name);
         
