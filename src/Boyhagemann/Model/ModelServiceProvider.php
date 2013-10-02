@@ -29,7 +29,15 @@ class ModelServiceProvider extends ServiceProvider {
 	 */
 	public function boot()
 	{
-		$this->register('Robbo\Presenter\PresenterServiceProvider');
+		Event::listen('model.builder.generate', function(Builder $builder) {
+
+			$me = App::make('Boyhagemann\Model\Generator');
+			$me->setBuilder($builder);
+			$me->exportToDb();
+
+			dd($me->buildFile());
+
+		});
 	}
 
 
