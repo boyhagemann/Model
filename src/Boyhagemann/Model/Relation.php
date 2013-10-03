@@ -13,7 +13,7 @@ class Relation
 	protected $builder;
 	protected $blueprint;
 
-	public function __construct(Builder $builder, $alias, $type)
+	public function __construct(ModelBuilder $builder, $alias, $type)
 	{
 		$this->builder = $builder;
 		$this->alias = $alias;

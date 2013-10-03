@@ -28,15 +28,15 @@ class Generator
 	}
 
 	/**
-	 * @param Builder $builder
+	 * @param ModelBuilder $builder
 	 */
-	public function setBuilder(Builder $builder)
+	public function setBuilder(ModelBuilder $builder)
 	{
 		$this->builder = $builder;
 	}
 
 	/**
-	 * @return Builder
+	 * @return ModelBuilder
 	 */
 	public function getBuilder()
 	{
@@ -47,11 +47,13 @@ class Generator
 	{
 		foreach($this->getBuilder()->buildBlueprints() as $blueprint) {
 
-			if (Schema::hasTable($blueprint->getTable())) {
-				Schema::drop($blueprint->getTable());
-			}
+//			if (Schema::hasTable($blueprint->getTable())) {
+//				Schema::drop($blueprint->getTable());
+//			}
 
-			$blueprint->create();
+			if (!Schema::hasTable($blueprint->getTable())) {
+				$blueprint->create();
+			}
 
 			$blueprint->build(DB::connection(), DB::connection()->getSchemaGrammar());
 		}
@@ -65,17 +67,8 @@ class Generator
 		$filename = $this->buildFilename();
 		$contents = $this->buildFile();
 
-		$parts = explode('\\', $filename);
-		for ($i = 0; $i < count($parts); $i++) {
-			$filename .= '/' . $parts[$i];
-			if ($i < count($parts) - 1) {
-				@mkdir($filename);
-			}
-		}
-
+		@mkdir(dirname($filename, 0755, true));
 		file_put_contents($filename, $contents);
-
-//		require_once $filename;
 
 		return $this;
 	}
@@ -86,7 +79,10 @@ class Generator
 	 */
 	public function buildFilename()
 	{
-		return app_path() .  '/' . trim($this->getBuilder()->getPath(), '/'). '.php';
+		$filename = app_path() .  '/' . trim($this->getBuilder()->getPath(), '/');
+		$filename .= '/' . $this->getBuilder()->getName() . '.php';
+		$filename = str_replace('\\', '/', $filename);
+		return $filename;
 	}
 
 	/**
@@ -98,7 +94,7 @@ class Generator
 		$file = $this->generator;
 		$file->setClass($builder->getName());
 		$class = current($file->getClasses());
-		$class->setExtendedClass('\\' . ltrim($builder->getParentClass(), '\\'));
+		$class->setExtendedClass($builder->getParentClass());
 
 		// Set the table name
 		$class->addProperty('table', $builder->getTable(), PropertyGenerator::FLAG_PROTECTED);
@@ -117,7 +113,7 @@ class Generator
 		// Add elements, only for relationships
 		foreach ($builder->getRelations() as $relation) {
 
-			if($relation->getType() == 'belongsToMany') {
+			if($relation->getType() == 'hasMany') {
 				$docblock = '@return \Illuminate\Database\Eloquent\Collection';
 				$body = sprintf('return $this->%s(\'%s\', \'%s\');', $relation->getType(), $relation->getModel(), $relation->getTable());
 			}

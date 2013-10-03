@@ -1,7 +1,7 @@
 <?php namespace Boyhagemann\Model;
 
 use Illuminate\Support\ServiceProvider;
-use App, Event;
+use App, Event, Redirect;
 
 class ModelServiceProvider extends ServiceProvider {
 
@@ -29,14 +29,15 @@ class ModelServiceProvider extends ServiceProvider {
 	 */
 	public function boot()
 	{
-		Event::listen('model.builder.generate', function(Builder $builder) {
+		Event::listen('model.builder.generate', function(ModelBuilder $builder) {
 
+			/** @var \Boyhagemann\Model\Generator $me */
 			$me = App::make('Boyhagemann\Model\Generator');
 			$me->setBuilder($builder);
 			$me->exportToDb();
+			$me->exportToFile();
 
-			dd($me->buildFile());
-
+			return Redirect::intended('/');
 		});
 	}
 
