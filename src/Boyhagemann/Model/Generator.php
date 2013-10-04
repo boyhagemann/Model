@@ -5,7 +5,7 @@ namespace Boyhagemann\Model;
 use Zend\Code\Generator\FileGenerator;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\PropertyGenerator;
-use Schema, DB;
+use Schema, DB, Event;
 
 class Generator
 {
@@ -45,7 +45,9 @@ class Generator
 
 	public function exportToDb()
 	{
-		foreach($this->getBuilder()->buildBlueprints() as $blueprint) {
+		$builder = $this->getBuilder();
+
+		foreach($builder->buildBlueprints() as $blueprint) {
 
 //			if (Schema::hasTable($blueprint->getTable())) {
 //				Schema::drop($blueprint->getTable());
@@ -56,6 +58,9 @@ class Generator
 			}
 
 			$blueprint->build(DB::connection(), DB::connection()->getSchemaGrammar());
+
+			// Trigger an event
+			Event::fire('modelBuilder.generator.export', compact('blueprint', 'builder'));
 		}
 	}
 
