@@ -51,14 +51,8 @@ $mb->hasOne('Category');
 ## Auto-generating and updating models
 This package checks if the model exists yet in the IoC container.
 If it doesn't, then the Eloquent model file is written to disk and the database table is created.
-
-If you wanna skip the auto-generating part in your application, just set autoGenerate to 'false' in yout ModelBuilder like this:
-```php
-$mb->autoGenerate(false); // defaults to true;
-```
-
 During development it may be handy to keep updating your database the moment you changed your configuration.
-There is an autoUpdate method in the ModelBuilder that can be set to 'true'.
+
 ```php
-$mb->autoUpdate(true); // defaults to false;
+$mb->autoGenerate();
 ```
