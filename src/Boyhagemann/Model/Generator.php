@@ -72,7 +72,7 @@ class Generator
 		$filename = $this->buildFilename();
 		$contents = $this->buildFile();
 
-		@mkdir(dirname($filename, 0755, true));
+		@mkdir(dirname($filename), 0755, true);
 		file_put_contents($filename, $contents);
 
 		return $this;
@@ -100,6 +100,7 @@ class Generator
 		$file->setClass($builder->getName());
 		$class = current($file->getClasses());
 		$class->setExtendedClass($builder->getParentClass());
+		$class->addUse('Eloquent');
 
 		// Set the table name
 		$class->addProperty('table', $builder->getTable(), PropertyGenerator::FLAG_PROTECTED);
