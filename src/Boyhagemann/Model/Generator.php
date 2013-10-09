@@ -101,7 +101,7 @@ class Generator
 		$class = current($file->getClasses());
 		$class->setExtendedClass($builder->getParentClass());
 
-		if(strstr($this->getTable(), '\\')) {
+		if(strstr($builder->getTable(), '\\')) {
 			$class->addUse('Eloquent');
 		}
 
