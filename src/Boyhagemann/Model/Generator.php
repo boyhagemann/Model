@@ -100,7 +100,10 @@ class Generator
 		$file->setClass($builder->getName());
 		$class = current($file->getClasses());
 		$class->setExtendedClass($builder->getParentClass());
-		$class->addUse('Eloquent');
+
+		if(strstr($this->getTable(), '\\')) {
+			$class->addUse('Eloquent');
+		}
 
 		// Set the table name
 		$class->addProperty('table', $builder->getTable(), PropertyGenerator::FLAG_PROTECTED);
