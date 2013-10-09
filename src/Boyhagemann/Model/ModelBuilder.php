@@ -254,7 +254,6 @@ class ModelBuilder
 			$model = get_class($model);
 		}
 
-		$nameParts = explode('\\', $model);
-		return strtolower(end($nameParts));
+		return strtolower(str_replace('\\', '_', $model));
 	}
 }
