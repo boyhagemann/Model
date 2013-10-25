@@ -233,10 +233,15 @@ class ModelBuilder
 
 		foreach($this->relations as $relation) {
 			if($relation->hasPivotTable()) {
-				$blueprints[] = $relation->getBlueprint();
+				$table = $relation->getBlueprint()->getTable();
+				if(!Schema::hasTable($table)) {
+					$blueprints[] = $relation->getBlueprint();
+				}
 			}
 			else {
-				$blueprint->integer($relation->getColumn());
+				if(!Schema::hasColumn($this->table, $relation->getColumn())) {
+					$blueprint->integer($relation->getColumn());
+				}
 			}
 		}
 
