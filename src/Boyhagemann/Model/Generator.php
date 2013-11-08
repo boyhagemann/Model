@@ -49,14 +49,12 @@ class Generator
 
 		foreach($builder->buildBlueprints() as $blueprint) {
 
-//			if (Schema::hasTable($blueprint->getTable())) {
-//				Schema::drop($blueprint->getTable());
-//			}
-
+			// Do we need to create a new table?
 			if (!Schema::hasTable($blueprint->getTable())) {
 				$blueprint->create();
 			}
 
+			// Export the schema to the database
 			$blueprint->build(DB::connection(), DB::connection()->getSchemaGrammar());
 
 			// Trigger an event

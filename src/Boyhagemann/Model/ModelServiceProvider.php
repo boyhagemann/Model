@@ -36,8 +36,6 @@ class ModelServiceProvider extends ServiceProvider {
 			$me->setBuilder($builder);
 			$me->exportToDb();
 			$me->exportToFile();
-
-//			return Redirect::intended('/');
 		});
 	}
 
