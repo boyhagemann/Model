@@ -29,14 +29,6 @@ class ModelServiceProvider extends ServiceProvider {
 	 */
 	public function boot()
 	{
-		Event::listen('model.builder.generate', function(ModelBuilder $builder) {
-
-			/** @var \Boyhagemann\Model\Generator $me */
-			$me = App::make('Boyhagemann\Model\Generator');
-			$me->setBuilder($builder);
-			$me->exportToDb();
-			$me->exportToFile();
-		});
 	}
 
 
@@ -47,7 +39,7 @@ class ModelServiceProvider extends ServiceProvider {
 	 */
 	public function provides()
 	{
-		return array();
+		return array('model');
 	}
 
 }

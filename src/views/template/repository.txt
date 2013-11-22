@@ -1,0 +1,24 @@
+<?php
+
+use Boyhagemann\Model\RepositoryInterface;
+
+class {repositoryClass} implements RepositoryInterface {
+
+	/**
+	 *
+	 * @return {modelClass}
+	 */
+	public function find($id)
+	{
+		return {modelClass}::where('id', '=', $id)->first();
+	}
+
+	/**
+	 *
+	 * @return Collection
+	 */
+	public function all()
+	{
+		return {modelClass}::all();
+	}
+}
