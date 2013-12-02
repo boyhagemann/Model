@@ -41,7 +41,7 @@ class GenerateModelAndRepository
 		$template = str_replace('{repositoryClass}', Str::studly($builder->getName() . 'Repository'), $template);
 		$template = str_replace('{modelClass}', Str::studly($builder->getName()), $template);
 
-		$filename = app_path('models/' . Str::studly($builder->getName()) . 'Repository.php');
+		$filename = app_path('repositories/' . Str::studly($builder->getName()) . 'Repository.php');
 
 		// Write the new repository file to the models folder
 		file_put_contents($filename, $template);
