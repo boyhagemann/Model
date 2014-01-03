@@ -73,6 +73,8 @@ class Generator
 		@mkdir(dirname($filename), 0755, true);
 		file_put_contents($filename, $contents);
 
+		require_once $filename;
+
 		return $this;
 	}
 

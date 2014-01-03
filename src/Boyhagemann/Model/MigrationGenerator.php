@@ -38,14 +38,14 @@ class MigrationGenerator extends BaseGenerator
 
 		}
 
-		if(!$fields) {
-			return;
-		}
-
-
 
 		if(Schema::hasTable($table)) {
 			$name = sprintf('add_%s_to_%s_table', implode('_', $new), Str::snake($table));
+
+			if(!$fields) {
+				return;
+			}
+
 		}
 		else {
 			$name = sprintf('create_%s_table', Str::snake($table));

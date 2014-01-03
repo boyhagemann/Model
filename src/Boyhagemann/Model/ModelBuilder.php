@@ -118,11 +118,11 @@ class ModelBuilder
 	 */
 	public function getTable()
 	{
-//		if($this->table) {
+		if($this->table) {
 			return $this->table;
-//		}
+		}
 
-//		return $this->buildTableNameFromModel($this->model);
+		return $this->buildTableNameFromModel($this->model);
 	}
 
 	/**
