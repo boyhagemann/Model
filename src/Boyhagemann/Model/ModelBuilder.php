@@ -15,8 +15,6 @@ class ModelBuilder
 	protected $columns = array();
 	protected $relations = array();
 
-	protected $autoGenerate = false;
-
 	/**
 	 * @param string $name
 	 * @return $this
@@ -120,11 +118,11 @@ class ModelBuilder
 	 */
 	public function getTable()
 	{
-		if($this->table) {
+//		if($this->table) {
 			return $this->table;
-		}
+//		}
 
-		return $this->buildTableNameFromModel($this->model);
+//		return $this->buildTableNameFromModel($this->model);
 	}
 
 	/**
@@ -189,21 +187,9 @@ class ModelBuilder
 		return $rules;
 	}
 
-	/**
-	 * @param bool $autoGenerate
-	 * @return $this
-	 */
-	public function autoGenerate($autoGenerate = true)
-	{
-		$this->autoGenerate = $autoGenerate;
-		return $this;
-	}
-
 	public function build()
 	{
-		if($this->autoGenerate) {
-			Event::fire('model.builder.generate', $this);
-		}
+		Event::fire('modelbuilder.build', array($this));
 
 		return App::make($this->name);
 	}

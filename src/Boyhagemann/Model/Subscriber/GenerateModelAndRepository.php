@@ -16,32 +16,32 @@ class GenerateModelAndRepository
 	 */
 	public function subscribe(Events $events)
 	{
-		$events->listen('model.builder.generate', array($this, 'generateModel'));
-		$events->listen('model.builder.generate', array($this, 'generateRepository'));
+		$events->listen('modelbuilder.build', array($this, 'generateModel'));
+		$events->listen('modelbuilder.build', array($this, 'generateRepository'));
 	}
 
 	/**
-	 * @param ModelBuilder $builder
+	 * @param ModelBuilder $mb
 	 */
-	public function generateModel(ModelBuilder $builder)
+	public function generateModel(ModelBuilder $mb)
 	{
 		/** @var \Boyhagemann\Model\Generator $me */
 		$me = App::make('Boyhagemann\Model\Generator');
-		$me->setBuilder($builder);
-		$me->exportToDb();
+		$me->setBuilder($mb);
+//		$me->exportToDb();
 		$me->exportToFile();
 	}
 
 	/**
-	 * @param ModelBuilder $builder
+	 * @param ModelBuilder $mb
 	 */
-	public function generateRepository(ModelBuilder $builder)
+	public function generateRepository(ModelBuilder $mb)
 	{
 		$template = file_get_contents(__DIR__ . '/../../../views/template/repository.txt');
-		$template = str_replace('{repositoryClass}', Str::studly($builder->getName() . 'Repository'), $template);
-		$template = str_replace('{modelClass}', Str::studly($builder->getName()), $template);
+		$template = str_replace('{repositoryClass}', Str::studly($mb->getName() . 'Repository'), $template);
+		$template = str_replace('{modelClass}', Str::studly($mb->getName()), $template);
 
-		$filename = app_path('repositories/' . Str::studly($builder->getName()) . 'Repository.php');
+		$filename = app_path('repositories/' . Str::studly($mb->getName()) . 'Repository.php');
 
 		// Write the new repository file to the models folder
 		file_put_contents($filename, $template);

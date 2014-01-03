@@ -54,6 +54,14 @@ class Column
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function isNullable()
+	{
+		return $this->hasRule('required') ? false : true;
+	}
+
+	/**
 	 * @param $rule
 	 * @return bool
 	 */

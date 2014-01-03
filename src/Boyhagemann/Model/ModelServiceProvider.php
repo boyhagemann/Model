@@ -29,6 +29,7 @@ class ModelServiceProvider extends ServiceProvider {
 	 */
 	public function boot()
 	{
+		$this->app->register('Way\Generators\GeneratorsServiceProvider');
 	}
 
 
